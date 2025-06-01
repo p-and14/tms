@@ -1,51 +1,12 @@
 from datetime import datetime, date
 import enum
-from typing import Annotated
-from uuid import uuid4, UUID
+from uuid import UUID
 
-from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
+from sqlalchemy.orm import Mapped, mapped_column, relationship
 from sqlalchemy import String, Text, ForeignKey
 from sqlalchemy.sql import func
 
-
-uuidpk = Annotated[UUID, mapped_column(primary_key=True, default=uuid4)]
-str_100 = Annotated[str, mapped_column(String(100))]
-
-
-class Base(DeclarativeBase):
-    repr_cols_num = 3
-    repr_cols = tuple()
-        
-    def __repr__(self):
-        cols = []
-        for idx, col in enumerate(self.__table__.columns.keys()):
-            if col in self.repr_cols or idx < self.repr_cols_num:
-                cols.append(f"{col}={getattr(self, col)}")
-
-        return f"<{self.__class__.__name__} {', '.join(cols)}>"
-    
-
-class User(Base):
-    __tablename__ = "user"
-
-    id: Mapped[uuidpk]
-    full_name: Mapped[str_100]
-    email: Mapped[str] = mapped_column(String(120), unique=True)
-    created_at: Mapped[datetime] = mapped_column(
-        server_default=func.now()
-    )
-    created_tasks: Mapped[list["Task"]] = relationship(
-        back_populates="author",
-        primaryjoin="User.id == Task.author_id"
-    )
-    assigned_tasks: Mapped[list["Task"]] = relationship(
-        back_populates="assignee",
-        primaryjoin="User.id == Task.assignee_id"
-        )
-    participant_tasks: Mapped[list["Task"]] = relationship(
-        back_populates="participants",
-        secondary="task_participant"
-    )
+from src.models.base_model import Base, uuidpk, str_100
     
 
 class Task(Base):
@@ -65,16 +26,16 @@ class Task(Base):
         server_default=func.now(),
         index=True)
     author_id: Mapped[UUID] = mapped_column(ForeignKey("user.id", ondelete="CASCADE"))
-    author: Mapped["User"] = relationship(
+    author: Mapped["User"] = relationship( # type: ignore  # noqa: F821
         back_populates="created_tasks",
         primaryjoin="Task.author_id == User.id"
     )
     assignee_id: Mapped[UUID | None] = mapped_column(ForeignKey("user.id", ondelete="SET NULL"))
-    assignee: Mapped["User"] = relationship(
+    assignee: Mapped["User"] = relationship( # type: ignore  # noqa: F821
         back_populates="assigned_tasks",
         primaryjoin="Task.assignee_id == User.id"
     )
-    participants: Mapped[list["User"]] = relationship(
+    participants: Mapped[list["User"]] = relationship( # type: ignore  # noqa: F821
         back_populates="participant_tasks",
         secondary="task_participant"
     )
