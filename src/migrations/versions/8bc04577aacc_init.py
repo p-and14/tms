@@ -1,7 +1,6 @@
 """init
 
 Revision ID: 8bc04577aacc
-Revises: d43f13137da6
 Create Date: 2025-06-01 19:38:28.152955
 
 """

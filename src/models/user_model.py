@@ -1,7 +1,6 @@
 from datetime import datetime
 from sqlalchemy.orm import Mapped, mapped_column, relationship
-from sqlalchemy import String
-from sqlalchemy.sql import func
+from sqlalchemy import String, text
 
 from src.models.base_model import Base, uuidpk, str_100
 
@@ -13,7 +12,7 @@ class User(Base):
     full_name: Mapped[str_100]
     email: Mapped[str] = mapped_column(String(120), unique=True)
     created_at: Mapped[datetime] = mapped_column(
-        server_default=func.now()
+        server_default=text("TIMEZONE('utc', now())")
     )
     created_tasks: Mapped[list["Task"]] = relationship( # type: ignore  # noqa: F821
         back_populates="author",

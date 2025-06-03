@@ -1,3 +1,4 @@
+import logging
 from pathlib import Path
 import sys
 from pydantic_settings import BaseSettings, SettingsConfigDict
@@ -5,6 +6,12 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 
 BASE_DIR = Path(__file__).absolute().parent.parent.parent
 sys.path.append(str(BASE_DIR))
+
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s [%(levelname)s] %(name)s - %(message)s",
+)
+
 
 class EnvDict(BaseSettings):
     model_config = SettingsConfigDict(
@@ -42,7 +49,23 @@ class RedisSettings(EnvDict):
         return f"redis://{self.REDIS_USER}:{self.REDIS_PASS}@{self.REDIS_HOST}:{self.REDIS_PORT}/{self.REDIS_DB}"
 
 
-class Settings(PgSettings, RedisSettings):
+class MongoDBSettings(EnvDict):
+    MONGO_HOST: str
+    MONGO_PORT: int
+    MONGO_USER: str
+    MONGO_PASS: str
+    MONGO_DB: str
+
+    @property
+    def MONGO_URL_auth(self):
+        return f"mongodb://{self.MONGO_USER}:{self.MONGO_PASS}@{self.MONGO_HOST}:{self.MONGO_PORT}/{self.MONGO_DB}"
+    
+    @property
+    def MONGO_URL_noauth(self):
+        return f"mongodb://{self.MONGO_HOST}:{self.MONGO_PORT}/{self.MONGO_DB}"
+    
+
+class Settings(PgSettings, RedisSettings, MongoDBSettings):
     pass
 
 

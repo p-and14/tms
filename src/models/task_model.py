@@ -3,34 +3,44 @@ import enum
 from uuid import UUID
 
 from sqlalchemy.orm import Mapped, mapped_column, relationship
-from sqlalchemy import String, Text, ForeignKey
-from sqlalchemy.sql import func
+from sqlalchemy import String, Text, ForeignKey, text
 
 from src.models.base_model import Base, uuidpk, str_100
-    
+
+
+class Status(enum.Enum):
+    todo = "todo"
+    in_progress = "in_progress"
+    done = "done"
+
+
+class Role(enum.Enum):
+    executor = "executor"
+    watcher = "watcher"
+
 
 class Task(Base):
     __tablename__ = "task"
     repr_cols_num = 4
-
-    class Status(enum.Enum):
-        todo = "todo"
-        in_progress = "in_progress"
-        done = "done"
 
     id: Mapped[uuidpk]
     title: Mapped[str] = mapped_column(String(255))
     description: Mapped[str | None] = mapped_column(Text)
     status: Mapped[Status]
     created_at: Mapped[datetime] = mapped_column(
-        server_default=func.now(),
+        server_default=text("TIMEZONE('utc', now())"),
         index=True)
     author_id: Mapped[UUID] = mapped_column(ForeignKey("user.id", ondelete="CASCADE"))
+    assignee_id: Mapped[UUID | None] = mapped_column(ForeignKey("user.id", ondelete="SET NULL"))
+    column_id: Mapped[UUID | None] = mapped_column(ForeignKey("column.id", ondelete="SET NULL"))
+    sprint_id: Mapped[UUID | None] = mapped_column(ForeignKey("sprint.id", ondelete="SET NULL"))
+    board_id: Mapped[UUID | None] = mapped_column(ForeignKey("board.id", ondelete="SET NULL"))
+    group_id: Mapped[UUID | None] = mapped_column(ForeignKey("group.id", ondelete="SET NULL"))
+
     author: Mapped["User"] = relationship( # type: ignore  # noqa: F821
         back_populates="created_tasks",
         primaryjoin="Task.author_id == User.id"
     )
-    assignee_id: Mapped[UUID | None] = mapped_column(ForeignKey("user.id", ondelete="SET NULL"))
     assignee: Mapped["User"] = relationship( # type: ignore  # noqa: F821
         back_populates="assigned_tasks",
         primaryjoin="Task.assignee_id == User.id"
@@ -39,22 +49,14 @@ class Task(Base):
         back_populates="participant_tasks",
         secondary="task_participant"
     )
-    column_id: Mapped[UUID | None] = mapped_column(ForeignKey("column.id", ondelete="SET NULL"))
     column: Mapped["Column | None"] = relationship(back_populates="tasks")
-    sprint_id: Mapped[UUID | None] = mapped_column(ForeignKey("sprint.id", ondelete="SET NULL"))
     sprint: Mapped["Sprint | None"] = relationship(back_populates="tasks")
-    board_id: Mapped[UUID | None] = mapped_column(ForeignKey("board.id", ondelete="SET NULL"))
     board: Mapped["Board | None"] = relationship(back_populates="tasks")
-    group_id: Mapped[UUID | None] = mapped_column(ForeignKey("group.id", ondelete="SET NULL"))
     group: Mapped["Group | None"] = relationship(back_populates="tasks")
 
 
 class TaskParticipant(Base):
     __tablename__ = "task_participant"
-
-    class Role(enum.Enum):
-        executor = "executor"
-        watcher = "watcher"
 
     id: Mapped[uuidpk]
     user_id: Mapped[UUID] = mapped_column(
@@ -73,6 +75,7 @@ class Board(Base):
 
     id: Mapped[uuidpk]
     name: Mapped[str_100] = mapped_column(unique=True)
+
     tasks: Mapped[list["Task"]] = relationship(back_populates="board")
     columns: Mapped[list["Column"]] = relationship(back_populates="board")
 
@@ -83,6 +86,7 @@ class Column(Base):
     id: Mapped[uuidpk]
     name: Mapped[str] = mapped_column(String(100), unique=True)
     board_id: Mapped[UUID] = mapped_column(ForeignKey("board.id", ondelete="CASCADE"))
+
     board: Mapped["Board"] = relationship(back_populates="columns")
     tasks: Mapped[list["Task"]] = relationship(back_populates="column")
 
@@ -94,6 +98,7 @@ class Sprint(Base):
     name: Mapped[str_100]
     start_date: Mapped[date]
     end_date: Mapped[date]
+
     tasks: Mapped[list["Task"]] = relationship(back_populates="sprint")
 
 
@@ -102,4 +107,5 @@ class Group(Base):
 
     id: Mapped[uuidpk]
     name: Mapped[str_100]
+    
     tasks: Mapped[list["Task"]] = relationship(back_populates="group")
