@@ -12,7 +12,6 @@ logging.basicConfig(
     format="%(asctime)s [%(levelname)s] %(name)s - %(message)s",
 )
 
-
 class EnvDict(BaseSettings):
     model_config = SettingsConfigDict(
         env_file=".env",

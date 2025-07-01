@@ -3,7 +3,7 @@ from uuid import UUID
 
 from redis import Redis
 
-from src.core.redis_db import redis_client
+from src.database.redis_db import redis_client
 
 
 log = logging.getLogger(__name__)

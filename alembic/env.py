@@ -5,11 +5,11 @@ from sqlalchemy import pool
 
 from alembic import context
 
-from core.config import settings
+from src.config import settings
 
-from src.models.base_model import Base
-from src.models.task_model import Task  # noqa: F401
-from src.models.user_model import User  # noqa: F401
+from src.models.base import Base
+from src.models.task import Task  # noqa: F401
+from src.models.user import User  # noqa: F401
 
 
 config = context.config

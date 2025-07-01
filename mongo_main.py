@@ -2,7 +2,7 @@ from datetime import datetime, timezone
 from uuid import uuid4
 
 from src.repositories.mongo_repository import mongo_task_repository, MongoTaskRepository
-from src.models.task_model import Status
+from src.models.task import Status
 
 
 def mongo_task_case(repository: MongoTaskRepository) -> None:

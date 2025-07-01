@@ -1,6 +1,6 @@
 import redis
 
-from src.core.config import settings
+from src.config import settings
 
 
 redis_client = redis.Redis.from_url(

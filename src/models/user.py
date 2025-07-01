@@ -2,7 +2,8 @@ from datetime import datetime
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from sqlalchemy import String, text
 
-from src.models.base_model import Base, uuidpk, str_100
+from src.models.base import Base, uuidpk, str_100
+from src.schemas.user import UserDB
 
 
 class User(Base):
@@ -26,3 +27,6 @@ class User(Base):
         back_populates="participants",
         secondary="task_participant"
     )
+
+    def to_schema(self) -> UserDB:
+        return UserDB(**self.__dict__)

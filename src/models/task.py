@@ -5,7 +5,7 @@ from uuid import UUID
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from sqlalchemy import String, Text, ForeignKey, text
 
-from src.models.base_model import Base, uuidpk, str_100
+from src.models.base import Base, uuidpk, str_100
 
 
 class Status(enum.Enum):
@@ -53,6 +53,10 @@ class Task(Base):
     sprint: Mapped["Sprint | None"] = relationship(back_populates="tasks")
     board: Mapped["Board | None"] = relationship(back_populates="tasks")
     group: Mapped["Group | None"] = relationship(back_populates="tasks")
+
+    def to_schema(self):
+        from src.schemas.task import TaskDB
+        return TaskDB(**self.__dict__)
 
 
 class TaskParticipant(Base):

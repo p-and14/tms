@@ -1,6 +1,6 @@
 from pymongo import MongoClient
 
-from src.core.config import settings
+from src.config import settings
 
 
 mongo_client = MongoClient(settings.MONGO_URL_noauth)

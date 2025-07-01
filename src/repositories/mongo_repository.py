@@ -5,7 +5,7 @@ from bson import Binary
 from bson.objectid import ObjectId
 from bson.errors import InvalidId
 
-from src.core.mongo_db import mongo_db
+from src.database.mongo_db import mongo_db
 
 
 log = logging.getLogger(__name__)
