@@ -5,7 +5,7 @@ from uuid import UUID
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from sqlalchemy import String, Text, ForeignKey, text
 
-from src.models.base import Base, uuidpk, str_100
+from src.models.base import Base, uuid_pk, str_100
 
 
 class Status(enum.Enum):
@@ -23,7 +23,7 @@ class Task(Base):
     __tablename__ = "task"
     repr_cols_num = 4
 
-    id: Mapped[uuidpk]
+    id: Mapped[uuid_pk]
     title: Mapped[str] = mapped_column(String(255))
     description: Mapped[str | None] = mapped_column(Text)
     status: Mapped[Status]
@@ -62,7 +62,7 @@ class Task(Base):
 class TaskParticipant(Base):
     __tablename__ = "task_participant"
 
-    id: Mapped[uuidpk]
+    id: Mapped[uuid_pk]
     user_id: Mapped[UUID] = mapped_column(
         ForeignKey("user.id", ondelete="CASCADE"),
         primary_key=True
@@ -77,7 +77,7 @@ class TaskParticipant(Base):
 class Board(Base):
     __tablename__ = "board"
 
-    id: Mapped[uuidpk]
+    id: Mapped[uuid_pk]
     name: Mapped[str_100] = mapped_column(unique=True)
 
     tasks: Mapped[list["Task"]] = relationship(back_populates="board")
@@ -87,7 +87,7 @@ class Board(Base):
 class Column(Base):
     __tablename__ = "column"
 
-    id: Mapped[uuidpk]
+    id: Mapped[uuid_pk]
     name: Mapped[str] = mapped_column(String(100), unique=True)
     board_id: Mapped[UUID] = mapped_column(ForeignKey("board.id", ondelete="CASCADE"))
 
@@ -98,7 +98,7 @@ class Column(Base):
 class Sprint(Base):
     __tablename__ = "sprint"
 
-    id: Mapped[uuidpk]
+    id: Mapped[uuid_pk]
     name: Mapped[str_100]
     start_date: Mapped[date]
     end_date: Mapped[date]
@@ -109,7 +109,7 @@ class Sprint(Base):
 class Group(Base):
     __tablename__ = "group"
 
-    id: Mapped[uuidpk]
+    id: Mapped[uuid_pk]
     name: Mapped[str_100]
     
     tasks: Mapped[list["Task"]] = relationship(back_populates="group")

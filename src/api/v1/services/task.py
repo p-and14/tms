@@ -18,8 +18,22 @@ class TaskService(BaseService):
     _repo: str = "task"
 
     @transaction_mode
+    async def check_user_existence(self, user_id: UUID4, field_name: str) -> None:
+        """Check if user exists"""
+        if not await self.uow.user.get_one_by_id_or_none(user_id):
+            raise HTTPException(
+                status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+                detail=f"{field_name.title()} with id {user_id} not found")
+
+    @transaction_mode
     async def create_task(self, task: CreateTaskRequest) -> TaskDB:
         """Create a new task"""
+        if task.author_id:
+            await self.check_user_existence(task.author_id, "author")
+
+        if task.assignee_id:
+            await self.check_user_existence(task.assignee_id, "assignee")
+
         created_task: Task = await self.uow.task.add_one_and_get_obj(**task.model_dump())
         return created_task.to_schema()
 
@@ -46,6 +60,12 @@ class TaskService(BaseService):
         data = task.model_dump(exclude_unset=True)
         if not data:
             raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="No request body specified")
+
+        if task.author_id:
+            await self.check_user_existence(task.author_id, "author")
+
+        if task.assignee_id:
+            await self.check_user_existence(task.assignee_id, "assignee")
 
         updated_task: Task = await self.uow.task.update_one_by_id(task_id=task_id, **data)
         self.check_existence(updated_task, detail=TASK_NOT_FOUND_MSG)

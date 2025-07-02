@@ -1,10 +1,12 @@
 import logging
 from pathlib import Path
 import sys
+
+from pydantic import BaseModel
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
-BASE_DIR = Path(__file__).absolute().parent.parent.parent
+BASE_DIR = Path(__file__).absolute().parent.parent
 sys.path.append(str(BASE_DIR))
 
 logging.basicConfig(
@@ -62,10 +64,17 @@ class MongoDBSettings(EnvDict):
     @property
     def MONGO_URL_noauth(self):
         return f"mongodb://{self.MONGO_HOST}:{self.MONGO_PORT}/{self.MONGO_DB}"
-    
+
+
+class AuthJWT(BaseModel):
+    private_key_path: Path = BASE_DIR / "certs" / "jwt-private.pem"
+    public_key_path: Path = BASE_DIR / "certs" / "jwt-public.pem"
+    algorithm: str = "RS256"
+    access_token_expire_minutes: int = 15
+
 
 class Settings(PgSettings, RedisSettings, MongoDBSettings):
-    pass
+    auth_jwt: AuthJWT = AuthJWT()
 
 
 settings = Settings() #type: ignore

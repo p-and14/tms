@@ -14,7 +14,7 @@ from src.schemas.task import (
 router = APIRouter(prefix="/tasks")
 
 
-@router.post("/", status_code=status.HTTP_201_CREATED)
+@router.post("/", response_model=CreateTaskResponse, status_code=status.HTTP_201_CREATED)
 async def create_task(
     task: CreateTaskRequest,
     task_service: TaskService = Depends()
@@ -24,7 +24,7 @@ async def create_task(
     return CreateTaskResponse(payload=created_task)
 
 
-@router.get("/{task_id}", status_code=status.HTTP_200_OK)
+@router.get("/{task_id}", response_model=TaskResponse, status_code=status.HTTP_200_OK)
 async def get_task(
     task_id: UUID4,
     task_service: TaskService = Depends()
@@ -34,7 +34,7 @@ async def get_task(
     return TaskResponse(payload=task)
 
 
-@router.get("/", status_code=status.HTTP_200_OK)
+@router.get("/", response_model=TaskListResponse, status_code=status.HTTP_200_OK)
 async def get_all_tasks(
     task_service: TaskService = Depends(),
     filters: TaskFilters = Depends()
@@ -44,7 +44,7 @@ async def get_all_tasks(
     return TaskListResponse(payload=tasks)
 
 
-@router.patch("/{task_id}", status_code=status.HTTP_200_OK)
+@router.patch("/{task_id}", response_model=CreateTaskResponse, status_code=status.HTTP_200_OK)
 async def update_task(
     task_id: UUID4,
     task: UpdateTaskRequest,

@@ -5,7 +5,7 @@ from sqlalchemy.orm import DeclarativeBase, mapped_column
 from sqlalchemy import String
 
 
-uuidpk = Annotated[UUID, mapped_column(primary_key=True, default=uuid4)]
+uuid_pk = Annotated[UUID, mapped_column(primary_key=True, default=uuid4)]
 str_100 = Annotated[str, mapped_column(String(100))]
 
 
