@@ -12,4 +12,5 @@ wheels/
 # Virtual environments
 .venv
 .env
+/.test.env
 /certs/

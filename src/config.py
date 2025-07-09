@@ -20,6 +20,7 @@ class EnvDict(BaseSettings):
         env_file_encoding="utf-8",
         extra="ignore"
     )
+    MODE: str
 
 
 class PgSettings(EnvDict):

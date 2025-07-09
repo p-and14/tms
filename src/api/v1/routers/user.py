@@ -3,7 +3,6 @@ from fastapi.security import OAuth2PasswordRequestForm, OAuth2PasswordBearer
 
 from src.api.v1.services.user import UserService
 from src.schemas.user import CreateUserRequest, Token, CreateUserResponse
-from src.utils import auth_jwt
 
 
 router = APIRouter()
@@ -25,11 +24,7 @@ async def login(
     form_data: OAuth2PasswordRequestForm = Depends(),
     user_service: UserService = Depends()
 ) -> Token:
-    user = await user_service.authenticate_user(form_data.username, form_data.password)
-    jwt_payload = {
-        "sub": user.id.hex
-    }
-    token = auth_jwt.encode_jwt(jwt_payload)
+    token = await user_service.get_jwt_token(form_data.username, form_data.password)
     return Token(access_token=token, token_type="Bearer")
 
 

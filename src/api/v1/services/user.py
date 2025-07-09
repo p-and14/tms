@@ -7,6 +7,7 @@ from pydantic import EmailStr
 
 from src.models.user import User
 from src.schemas.user import CreateUserRequest, UserDB
+from src.utils import auth_jwt
 from src.utils.auth_jwt import hash_password, verify_password, decode_jwt
 from src.utils.constants import USER_EXISTS_MSG
 from src.utils.service import BaseService, transaction_mode
@@ -30,13 +31,17 @@ class UserService(BaseService):
             )
 
     @transaction_mode
-    async def create_user(self, user: CreateUserRequest) -> UserDB:
+    async def create_user(self, user: CreateUserRequest, user_id: uuid.UUID = None) -> UserDB:
         """Create new user"""
         await self.check_email_existence(user.email)
         hashed_password = hash_password(user.password)
+        data = user.model_dump(exclude={"password"})
+        if user_id:
+            data["id"] = user_id
+
         created_user: User = await self.uow.user.add_one_and_get_obj(
             hashed_password=hashed_password.decode("utf-8"),
-            **user.model_dump(exclude={"password"})
+            **data
         )
         return created_user.to_schema()
 
@@ -49,6 +54,12 @@ class UserService(BaseService):
         if not verify_password(password, user.hashed_password.encode("utf-8")):
             raise self.credentials_exception
         return user
+
+    async def get_jwt_token(self, email: str, password: str) -> str:
+        """Get JWT token"""
+        user = await self.authenticate_user(email, password)
+        jwt_payload = {"sub": user.id.hex}
+        return auth_jwt.encode_jwt(jwt_payload)
 
     @transaction_mode
     async def get_current_user(self, token: str) -> UserDB:

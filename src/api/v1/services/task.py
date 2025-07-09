@@ -26,7 +26,7 @@ class TaskService(BaseService):
                 detail=f"{field_name.title()} with id {user_id} not found")
 
     @transaction_mode
-    async def create_task(self, task: CreateTaskRequest) -> TaskDB:
+    async def create_task(self, task: CreateTaskRequest, task_id: UUID4 = None) -> TaskDB:
         """Create a new task"""
         if task.author_id:
             await self.check_user_existence(task.author_id, "author")
@@ -34,7 +34,10 @@ class TaskService(BaseService):
         if task.assignee_id:
             await self.check_user_existence(task.assignee_id, "assignee")
 
-        created_task: Task = await self.uow.task.add_one_and_get_obj(**task.model_dump())
+        data = task.model_dump()
+        if task_id:
+            data["id"] = task_id
+        created_task: Task = await self.uow.task.add_one_and_get_obj(**data)
         return created_task.to_schema()
 
     @transaction_mode
