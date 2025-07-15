@@ -1,0 +1,14 @@
+__pycache__
+.pytest_cache
+
+.DS_Store
+.idea
+
+tests
+pytest.ini
+
+.venv
+.env.example
+.test.env
+
+Dockerfile

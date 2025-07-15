@@ -1,0 +1,85 @@
+networks:
+  tms-network:
+    name: tms-network
+    driver: bridge
+
+services:
+  auth-service:
+    build:
+      context: ./auth-service
+      dockerfile: Dockerfile
+    container_name: auth-service
+    ports:
+      - "8001:8000"
+    env_file:
+      - ./auth-service/.env
+    depends_on:
+      - db
+      - rabbitmq
+    networks:
+      - tms-network
+    command:
+        sh -c "alembic upgrade head;
+                uvicorn src.main:app --host 0.0.0.0 --port 8000"
+
+  task-service:
+    build:
+      context: ./task-service
+      dockerfile: Dockerfile
+    container_name: task-service
+    ports:
+      - "8002:8000"
+    env_file:
+      - ./task-service/.env
+    depends_on:
+      - db
+      - rabbitmq
+    networks:
+      - tms-network
+    command:
+      sh -c "alembic upgrade head;
+              uvicorn src.main:app --host 0.0.0.0 --port 8000"
+
+  email-service:
+    build:
+      context: ./email-service
+      dockerfile: Dockerfile
+    container_name: email-service
+    env_file:
+      - ./email-service/.env
+    depends_on:
+      - db
+      - rabbitmq
+    networks:
+      - tms-network
+
+  rabbitmq:
+    image: rabbitmq:4-management
+    container_name: rabbitmq
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    networks:
+      - tms-network
+
+  db:
+    image: postgres:17.5-alpine
+    container_name: db
+    env_file:
+      - .env
+    environment:
+      POSTGRES_DB: postgres_tms
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres_1295
+    ports:
+      - 5432:5432
+    volumes:
+      - ./pgdata:/var/lib/postgresql/data
+    networks:
+      - tms-network
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -q -d $POSTGRES_DB -U $POSTGRES_USER" ]
+      interval: 10s
+      timeout: 10s
+      retries: 5
+      start_period: 10s

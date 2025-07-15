@@ -9,8 +9,11 @@ wheels/
 .DS_Store
 .idea
 
+pgdata
+
 # Virtual environments
-.venv
 .env
-/.test.env
-/certs/
+.venv
+auth-service/.env
+.test.env
+/auth-service/certs/
